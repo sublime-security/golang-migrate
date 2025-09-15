@@ -7,14 +7,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"go.uber.org/atomic"
 	"io"
 	"io/ioutil"
+	"log"
 	nurl "net/url"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
+
+	"go.uber.org/atomic"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database"
@@ -223,7 +225,10 @@ func (p *Postgres) Lock() error {
 		}
 
 		// This will wait indefinitely until the lock can be acquired.
-		query := `SELECT pg_advisory_lock($1)`
+		// TODO HUGE HACK
+		log.Print("golang-migrate: NOT ACTUALLY LOCKING")
+		//query := `SELECT pg_advisory_lock($1)`
+		query := `SELECT $1`
 		if _, err := p.conn.ExecContext(context.Background(), query, aid); err != nil {
 			return &database.Error{OrigErr: err, Err: "try lock failed", Query: []byte(query)}
 		}
@@ -239,7 +244,11 @@ func (p *Postgres) Unlock() error {
 			return err
 		}
 
-		query := `SELECT pg_advisory_unlock($1)`
+		// TODO HUGE HACK
+		//query := `SELECT pg_advisory_unlock($1)`
+		log.Print("golang-migrate: NOT ACTUALLY UNLOCKING")
+		query := `SELECT $1`
+
 		if _, err := p.conn.ExecContext(context.Background(), query, aid); err != nil {
 			return &database.Error{OrigErr: err, Query: []byte(query)}
 		}
